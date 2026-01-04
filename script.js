@@ -89,7 +89,7 @@ inventory.init();
 document.getElementById('startButton').addEventListener('click', () => {
     const button = document.getElementById('startButton');
     const wordsContainer = document.getElementById('wordsContainer');
-    intro = new Audio('/public/sounds/echoes.ogg');
+    intro = new Audio('./public/sounds/echoes.ogg');
     intro.loop = true;
     
     button.classList.add('fade-out');
@@ -105,7 +105,7 @@ document.getElementById('startButton').addEventListener('click', () => {
 
 // Word click handler
 function showWordText(wordKey) {
-    const buttonClickSound = new Audio('/public/sounds/button-clicked.ogg');
+    const buttonClickSound = new Audio('./public/sounds/button-clicked.ogg');
     const wordsContainer = document.getElementById('wordsContainer');
     const textContainer = document.getElementById('textContainer');
     const textContent = document.getElementById('textContent');
@@ -177,7 +177,7 @@ function tryGoToDoor() {
         setTimeout(() => {
             doorScreen.classList.add('visible');
             destroyAudio(intro);
-            heartbeat = new Audio('/public/sounds/heart-beat.ogg');
+            heartbeat = new Audio('./public/sounds/heart-beat.ogg');
             heartbeat.loop = true;
             heartbeat.play();
         }, 1000);
@@ -199,11 +199,11 @@ function openDoor() {
     const manOnChair = document.getElementById('manOnChair');
     doorScreen.classList.remove('visible');
     destroyAudio(heartbeat);
-    const unlockDoor = new Audio('/public/sounds/unlock.ogg');
+    const unlockDoor = new Audio('./public/sounds/unlock.ogg');
     unlockDoor.play();
                 
     setTimeout(() => {
-      rust = new Audio('/public/sounds/rust.ogg');
+      rust = new Audio('./public/sounds/rust.ogg');
       rust.play();
       // Reset typewriter state and clear container so typing starts fresh
       manWordsContainer.textContent = '';
