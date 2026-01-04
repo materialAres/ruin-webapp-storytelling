@@ -1,0 +1,334 @@
+@import "/style/animations.css";
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-family: 'Georgia', serif;
+}
+
+.start-button {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ff4444, #cc0000);
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 0 40px rgba(255, 68, 68, 0.6),
+        0 0 80px rgba(255, 68, 68, 0.4),
+        inset 0 0 60px rgba(255, 100, 100, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.start-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 100, 100, 0.4), transparent);
+}
+
+.start-button:hover {
+    transform: scale(1.1);
+    box-shadow: 
+        0 0 60px rgba(255, 68, 68, 0.8),
+        0 0 100px rgba(255, 68, 68, 0.6),
+        inset 0 0 80px rgba(255, 100, 100, 0.5);
+}
+
+.start-button:active {
+    transform: scale(0.95);
+}
+
+.start-button.fade-out {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+/* Words Container */
+.words-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease;
+}
+
+.words-container.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.words-container.fade-out {
+    opacity: 0;
+}
+
+.word {
+    position: absolute;
+    font-size: 4em;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.word:hover {
+    color: #ff4444;
+    text-shadow: 0 0 30px rgba(255, 68, 68, 0.8);
+    transform: scale(1.1);
+}
+
+.word.show {
+    animation: fadeInFloat 1.5s ease forwards;
+}
+
+#curse {
+    top: 20%;
+    left: 15%;
+    transform: rotate(-15deg);
+    animation-delay: 0.2s;
+}
+
+#begin {
+    top: 50%;
+    right: 20%;
+    transform: rotate(10deg) translateY(-50%);
+    animation-delay: 0.5s;
+}
+
+#trail {
+    bottom: 25%;
+    left: 50%;
+    transform: rotate(-8deg) translateX(-50%);
+    animation-delay: 0.8s;
+}
+
+/* Floating animation */
+#curse.show {
+    --rotate: -15deg;
+    animation: fadeInFloat 1.5s ease forwards, float1 3s ease-in-out 1.5s infinite;
+}
+
+#begin.show {
+    --rotate: 10deg;
+    animation: fadeInFloat 1.5s ease forwards, float2 3.5s ease-in-out 1.5s infinite;
+}
+
+#trail.show {
+    --rotate: -8deg;
+    animation: fadeInFloat 1.5s ease forwards, float3 4s ease-in-out 1.5s infinite;
+}
+
+/* Text Display */
+.text-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease;
+}
+
+.text-container.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.text-content {
+    max-width: 800px;
+    font-size: 1.5em;
+    line-height: 1.8;
+    color: #fff;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    opacity: 0;
+    animation: fadeInText 2s ease forwards;
+    margin-bottom: 40px;
+}
+
+.back-button {
+    padding: 15px 40px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-family: 'Georgia', serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+    animation: fadeInText 2s 0.5s ease forwards;
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.back-button:active {
+    transform: translateY(0);
+}
+
+/* Door Screen */
+.door-screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 1s ease;
+}
+
+.door-screen.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.light-flicker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: transparent;
+    animation: flicker 8s infinite;
+    mix-blend-mode: screen;
+}
+
+.clickable-key {
+    color: #8b7d6b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(139, 125, 107, 0.5);
+}
+
+.clickable-key:hover {
+    color: #a89a85;
+    text-shadow: 0 0 15px rgba(139, 125, 107, 0.8);
+    transform: scale(1.05);
+}
+
+.clickable-key.collected {
+    opacity: 0.5;
+    cursor: default;
+    text-decoration: line-through;
+}
+
+.clickable-listens {
+    color: #999;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-style: italic;
+}
+
+.clickable-listens:hover {
+    color: #ccc;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Error message */
+.error-message {
+    position: fixed;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(40, 0, 0, 0.95);
+    color: #ff6666;
+    padding: 20px 40px;
+    border-radius: 5px;
+    font-size: 1.2em;
+    font-family: 'Georgia', serif;
+    border: 2px solid #660000;
+    box-shadow: 
+        0 0 20px rgba(255, 0, 0, 0.3),
+        inset 0 0 20px rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    animation: glitchMessage 2s ease forwards;
+    z-index: 1000;
+}
+
+/* Item obtained message */
+.item-obtained {
+    position: fixed;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 0, 0, 0.95);
+    color: #ff4444;
+    padding: 20px 40px;
+    border-radius: 5px;
+    font-size: 1.2em;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 3px;
+    border: 2px solid #660000;
+    box-shadow: 
+        0 0 20px rgba(255, 0, 0, 0.5),
+        inset 0 0 20px rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    animation: glitchMessage 2s ease forwards;
+    z-index: 1000;
+    text-shadow: 
+        2px 2px 0 #000,
+        -1px -1px 0 #300;
+}
+
+.alone {
+    object-fit: contain;
+    width: 50%;
+    filter: grayscale(1) contrast(1.2);
+    animation: image-shake 0.5s infinite;
+}
+
+.typewriter {
+    position: inherit;
+    top: 12vh;
+    left: 12vw;
+    z-index: 10;
+    color: whitesmoke;
+    /* preserve newlines and wrap text */
+    white-space: pre-wrap;
+    max-width: 30%;
+}
+
+@media (max-width: 768px) {
+    .alone {
+        width: 70%;
+    }
+
+    .typewriter {
+        max-width: 50%;
+        font-size: 1.2em;
+    }
+}
