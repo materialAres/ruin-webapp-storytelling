@@ -12,6 +12,12 @@ const manMessages = [
     "It's cold and useless this night, inhaling again this substance without matter, which crumbles my being and shuts off my essence.",
 ];
 
+const chosenPathMessages = {
+    sleep: "Witnessing your nightmares as if you were sitting in a theatre… They traverse your lungs, they touch your secrets and show your real sufferings. But are you capable of facing them when you wake up? Will you be able to cry?",
+    restore: "Fragments of life scattered on the floor, make them fit and overcome your dreads. It's never too late if you are willing to withstand the events.",
+    continue: "Between the margins of your consciousness you hear nothing, you don't want to look into it. And so it is, seclude yourself in another night where you cannot even whisper, inhale and ride the decay."
+};
+
 let intro = null;
 let heartbeat = null;
 let rust = null;
@@ -21,32 +27,6 @@ let typingSpeed = 60;
 let messageIndex = 0;
 let charIndex = 0;
 let typingTimer = null;
-
-function typeWriter() {
-    if (messageIndex >= manMessages.length) {
-        manWordsContainer.classList.add('finished');
-        return;
-    }
-
-    const current = manMessages[messageIndex];
-
-    if (charIndex < current.length) {
-        manWordsContainer.textContent += current.charAt(charIndex);
-        charIndex++;
-        typingTimer = setTimeout(typeWriter, typingSpeed);
-    } else {
-        // End of current message: add spacing and move to next
-        messageIndex++;
-        charIndex = 0;
-
-        if (messageIndex < manMessages.length) {
-            manWordsContainer.textContent += '\n\n';
-            typingTimer = setTimeout(typeWriter, 700);
-        } else {
-            manWordsContainer.classList.add('finished');
-        }
-    }
-}
 
 // Inventory management
 const inventory = {
@@ -226,6 +206,77 @@ document.querySelectorAll('.word').forEach(word => {
         showWordText(wordKey);
     });
 });
+
+function typeWriter() {
+    if (messageIndex >= manMessages.length) {
+        manWordsContainer.classList.add('finished');
+        return;
+    }
+
+    const current = manMessages[messageIndex];
+
+    if (charIndex < current.length) {
+        manWordsContainer.textContent += current.charAt(charIndex);
+        charIndex++;
+        typingTimer = setTimeout(typeWriter, typingSpeed);
+    } else {
+        // End of current message: add spacing and move to next
+        messageIndex++;
+        charIndex = 0;
+
+        if (messageIndex < manMessages.length) {
+            manWordsContainer.textContent += '\n\n';
+            typingTimer = setTimeout(typeWriter, 700);
+        } else {
+            manWordsContainer.classList.add('finished');
+            enableManChoices();
+        }
+    }
+}
+
+function enableManChoices() {
+    const chooseDiv = document.getElementById('choose');
+    chooseDiv.classList.add('visible');
+
+    // add three options as clickable spans
+    chooseDiv.innerHTML = `
+        <span class="choice" id="sleep">Sleep</span>
+        <span class="choice" id="restore">Restore</span>
+        <span class="choice" id="continue">Continue</span>
+    `;
+
+    // Add event listeners for choices
+    document.getElementById('sleep').addEventListener('click', () => {
+        showChoice('sleep');
+    });
+    document.getElementById('restore').addEventListener('click', () => {
+        showChoice('restore');
+    });
+    document.getElementById('continue').addEventListener('click', () => {
+        showChoice('continue');
+    });
+}
+
+function showChoice(choice) {
+    const buttonClickSound = new Audio('./public/sounds/button-clicked.ogg');
+    const manOnChair = document.getElementById('manOnChair');
+    const choiceContainer = document.getElementById('choiceContainer');
+    
+    // Fade out words
+    manOnChair.classList.add('fade-out');
+    buttonClickSound.play();
+    
+    // Show text after words fade
+    setTimeout(() => {
+        if (choice === 'restore') {
+            document.body.style.backgroundColor = 'white';
+            choiceContainer.style.color = 'black';
+        }
+        manOnChair.style.display = 'none';
+        choiceContainer.innerHTML = chosenPathMessages[choice];
+        choiceContainer.classList.add('visible');
+    }, 1000);
+}
 
 // Back button handler
 document.getElementById('backButton').addEventListener('click', () => {

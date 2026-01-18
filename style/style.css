@@ -85,7 +85,7 @@ body {
 .word {
     position: absolute;
     font-size: 4em;
-    color: #fff;
+    color: whitesmoke;
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
     opacity: 0;
     cursor: pointer;
@@ -163,7 +163,7 @@ body {
     max-width: 800px;
     font-size: 1.5em;
     line-height: 1.8;
-    color: #fff;
+    color: whitesmoke;
     text-align: center;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     opacity: 0;
@@ -174,7 +174,7 @@ body {
 .back-button {
     padding: 15px 40px;
     background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: whitesmoke;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 8px;
     font-size: 1.1em;
@@ -197,7 +197,7 @@ body {
 }
 
 /* Door Screen */
-.door-screen {
+.screen {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -209,7 +209,7 @@ body {
     transition: opacity 1s ease;
 }
 
-.door-screen.visible {
+.screen.visible {
     opacity: 1;
     pointer-events: auto;
 }
@@ -275,7 +275,7 @@ body {
         0 0 20px rgba(255, 0, 0, 0.3),
         inset 0 0 20px rgba(0, 0, 0, 0.8);
     opacity: 0;
-    animation: glitchMessage 2s ease forwards;
+    animation: glitchMessageAndDisappear 2s ease forwards;
     z-index: 1000;
 }
 
@@ -297,7 +297,7 @@ body {
         0 0 20px rgba(255, 0, 0, 0.5),
         inset 0 0 20px rgba(0, 0, 0, 0.8);
     opacity: 0;
-    animation: glitchMessage 2s ease forwards;
+    animation: glitchMessageAndDisappear 2s ease forwards;
     z-index: 1000;
     text-shadow: 
         2px 2px 0 #000,
@@ -320,6 +320,26 @@ body {
     /* preserve newlines and wrap text */
     white-space: pre-wrap;
     max-width: 30%;
+}
+
+.choose {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    position: inherit;
+    bottom: 10vh;
+    left: 50%;
+    transform: translateX(-50%);
+    color: whitesmoke;
+    font-size: 1.5em;
+    animation: image-shake 1s infinite;
+    width: max-content;
+    cursor: pointer;
+}
+
+.screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
 }
 
 @media (max-width: 768px) {
