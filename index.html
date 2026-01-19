@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruin</title>
     <link rel="stylesheet" href="./style/style.css">
-    <script defer src="./script.js"></script>
+    <script defer src="./js/script.js" type="module"></script>
 </head>
 <body>
     <button class="start-button" id="startButton" aria-label="Start"></button>
@@ -23,12 +23,12 @@
 
     <div class="screen" id="doorScreen">
         <div class="light-flicker"></div>
-        <img src="/public/assets/door.png" alt="" onclick="openDoor()">
+        <img src="./public/assets/door.png" alt="" onclick="openDoor()">
     </div>
 
     <div class="screen" id="manOnChair">
         <div class="typewriter" id="typewriter"></div>
-        <img class="alone" src="/public/assets/alone.jpg" alt="">
+        <img class="alone" src="./public/assets/alone.jpg" alt="">
         <div class="choose" id="choose"></div>
     </div>
 
