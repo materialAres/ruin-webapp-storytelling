@@ -69,6 +69,7 @@ inventory.init();
 document.getElementById('startButton').addEventListener('click', () => {
     const button = document.getElementById('startButton');
     const wordsContainer = document.getElementById('wordsContainer');
+    wordsContainer.style.display = 'block';
     intro = new Audio('./public/sounds/echoes.ogg');
     intro.loop = true;
     
@@ -89,6 +90,8 @@ function showWordText(wordKey) {
     const wordsContainer = document.getElementById('wordsContainer');
     const textContainer = document.getElementById('textContainer');
     const textContent = document.getElementById('textContent');
+
+    textContainer.style.display = 'flex';
     
     // Fade out words
     wordsContainer.classList.add('fade-out');
@@ -156,6 +159,7 @@ function tryGoToDoor() {
         
         setTimeout(() => {
             doorScreen.classList.add('visible');
+            doorScreen.style.display = 'flex';
             destroyAudio(intro);
             heartbeat = new Audio('./public/sounds/heart-beat.ogg');
             heartbeat.loop = true;
@@ -195,9 +199,13 @@ function openDoor() {
       }
 
       manOnChair.classList.add('visible');
+      manOnChair.style.display = 'flex';
       typeWriter();
     }, 1000);
 }
+
+// Expose openDoor to global scope for inline onclick handler
+window.openDoor = openDoor;
 
 // Add click handlers to all words
 document.querySelectorAll('.word').forEach(word => {
@@ -291,5 +299,6 @@ document.getElementById('backButton').addEventListener('click', () => {
         wordsContainer.style.display = '';
         wordsContainer.classList.remove('fade-out');
         wordsContainer.classList.add('visible');
+        wordsContainer.style.display = 'flex';
     }, 1000);
 });

@@ -226,6 +226,10 @@ body {
     mix-blend-mode: screen;
 }
 
+#wordsContainer, #textContainer, #doorScreen, #manOnChair {
+    display: none;
+}
+
 .clickable-key {
     color: #8b7d6b;
     cursor: pointer;
