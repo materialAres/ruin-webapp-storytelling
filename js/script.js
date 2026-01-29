@@ -279,9 +279,20 @@ function showChoice(choice) {
         if (choice === 'restore') {
             document.body.style.backgroundColor = 'white';
             choiceContainer.style.color = 'black';
+            
+            // Initialize puzzle after 5 seconds
+            setTimeout(() => {
+                initializePuzzle();
+            }, 5000);
         }
         manOnChair.style.display = 'none';
-        choiceContainer.innerHTML = chosenPathMessages[choice];
+        
+        // Create text element instead of replacing innerHTML to preserve puzzle wrapper
+        const textDiv = document.createElement('div');
+        textDiv.className = 'choice-text';
+        textDiv.textContent = chosenPathMessages[choice];
+        choiceContainer.insertBefore(textDiv, choiceContainer.firstChild);
+        
         choiceContainer.classList.add('visible');
     }, 1000);
 }
@@ -302,3 +313,169 @@ document.getElementById('backButton').addEventListener('click', () => {
         wordsContainer.style.display = 'flex';
     }, 1000);
 });
+
+// Puzzle functions
+function generateMainBoard() {
+    const mainBoard = document.getElementById('puzzleMainBoard');
+    mainBoard.innerHTML = '';
+    
+    for (let i = 0; i < 16; i++) {
+        const dropZone = document.createElement('div');
+        dropZone.className = 'puzzle-drop-zone';
+        dropZone.dataset.position = i;
+        dropZone.addEventListener('dragover', handleDragOver);
+        dropZone.addEventListener('dragleave', handleDragLeave);
+        dropZone.addEventListener('drop', handleDrop);
+        mainBoard.appendChild(dropZone);
+    }
+}
+
+function generateSelectionBoard() {
+    const selectionBoard = document.getElementById('puzzleSelectionBoard');
+    selectionBoard.innerHTML = '';
+    
+    for (let row = 0; row < 2; row++) {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'puzzle-selection-row';
+        
+        for (let col = 0; col < 8; col++) {
+            const pieceIndex = row * 8 + col;
+            const piece = document.createElement('div');
+            piece.className = 'puzzle-piece';
+            piece.draggable = true;
+            piece.dataset.pieceId = pieceIndex;
+            piece.dataset.correctPosition = pieceIndex;
+            piece.style.backgroundImage = `url('./public/assets/puzzle-piece-${pieceIndex}.png')`;
+            piece.textContent = pieceIndex + 1; // Placeholder number
+            piece.addEventListener('dragstart', handleDragStart);
+            piece.addEventListener('dragend', handleDragEnd);
+            rowDiv.appendChild(piece);
+        }
+        
+        selectionBoard.appendChild(rowDiv);
+    }
+}
+
+function handleDragStart(e) {
+    if (e.target.classList.contains('placed')) {
+        e.preventDefault();
+        return;
+    }
+    
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', e.target.dataset.pieceId);
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    if (!e.target.classList.contains('filled')) {
+        e.target.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    e.target.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const dropZone = e.target;
+    dropZone.classList.remove('drag-over');
+    
+    // Don't allow dropping on filled zones
+    if (dropZone.classList.contains('filled')) {
+        return;
+    }
+    
+    const pieceId = e.dataTransfer.getData('text/plain');
+    const piece = document.querySelector(`[data-piece-id="${pieceId}"]`);
+    
+    if (piece && !piece.classList.contains('placed')) {
+        // Clone the piece and place it in the drop zone
+        const placedPiece = piece.cloneNode(true);
+        placedPiece.draggable = false;
+        placedPiece.classList.add('in-board');
+        dropZone.appendChild(placedPiece);
+        
+        // Mark original as placed
+        piece.classList.add('placed');
+        dropZone.classList.add('filled');
+        
+        // Check if puzzle is complete
+        checkPuzzleComplete();
+    }
+}
+
+function checkPuzzleComplete() {
+    const dropZones = document.querySelectorAll('.puzzle-drop-zone');
+    let correctCount = 0;
+    
+    dropZones.forEach((zone, index) => {
+        const piece = zone.querySelector('.puzzle-piece');
+        if (piece && parseInt(piece.dataset.correctPosition, 10) === index) {
+            correctCount++;
+        }
+    });
+    
+    if (correctCount === 16) {
+        onPuzzleComplete();
+    }
+}
+
+function onPuzzleComplete() {
+    const puzzleWrapper = document.getElementById('puzzleWrapper');
+    const mainBoard = document.getElementById('puzzleMainBoard');
+    
+    // Play success sound
+    const successSound = new Audio('./public/sounds/puzzle-complete.ogg');
+    successSound.play();
+    
+    // Add completion visual effect
+    mainBoard.classList.add('puzzle-complete');
+    
+    // Show completion message after 1 second
+    setTimeout(() => {
+        showCompletionMessage();
+    }, 1000);
+}
+
+function showCompletionMessage() {
+    const message = document.createElement('div');
+    message.className = 'puzzle-completion-message';
+    message.innerHTML = `
+        <h2>Conscience Restored</h2>
+        <p>The pieces fall into place...</p>
+    `;
+    document.body.appendChild(message);
+    
+    setTimeout(() => {
+        message.classList.add('visible');
+    }, 50);
+}
+
+function initializePuzzle() {
+    const choiceContainer = document.getElementById("choiceContainer");
+    const puzzleWrapper = document.getElementById("puzzleWrapper");
+    
+    // Animate existing text up via CSS transition class
+    choiceContainer.classList.add("choice-move-up");
+    
+    // Show puzzle after text moves
+    setTimeout(() => {
+        generateMainBoard();
+        generateSelectionBoard();
+        puzzleWrapper.style.display = "flex";
+        setTimeout(() => {
+            puzzleWrapper.classList.add("visible");
+        }, 50);
+    }, 1000);
+}
