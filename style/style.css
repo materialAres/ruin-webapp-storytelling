@@ -458,7 +458,6 @@ body {
 }
 
 .puzzle-piece.dragging {
-    opacity: 0.5;
     transform: scale(1.1);
 }
 

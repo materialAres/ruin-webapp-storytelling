@@ -23,7 +23,8 @@ let heartbeat = null;
 let rust = null;
 
 const manWordsContainer = document.getElementById('typewriter');
-let typingSpeed = 60;
+// TODO: adjust typing speed at 60
+let typingSpeed = 1;
 let messageIndex = 0;
 let charIndex = 0;
 let typingTimer = null;
@@ -345,7 +346,7 @@ function generateSelectionBoard() {
             piece.draggable = true;
             piece.dataset.pieceId = pieceIndex;
             piece.dataset.correctPosition = pieceIndex;
-            piece.style.backgroundImage = `url('./public/assets/puzzle-piece-${pieceIndex}.png')`;
+            piece.style.backgroundImage = `url('./public/assets/puzzle-pieces/puzzle-piece-${pieceIndex}.jpg')`;
             piece.textContent = pieceIndex + 1; // Placeholder number
             piece.addEventListener('dragstart', handleDragStart);
             piece.addEventListener('dragend', handleDragEnd);
@@ -365,6 +366,12 @@ function handleDragStart(e) {
     e.target.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', e.target.dataset.pieceId);
+    
+    // Store source information for board pieces
+    if (e.target.classList.contains('in-board')) {
+        const dropZone = e.target.parentElement;
+        e.dataTransfer.setData('sourcePosition', dropZone.dataset.position);
+    }
 }
 
 function handleDragEnd(e) {
@@ -397,21 +404,46 @@ function handleDrop(e) {
     }
     
     const pieceId = e.dataTransfer.getData('text/plain');
-    const piece = document.querySelector(`[data-piece-id="${pieceId}"]`);
+    const sourcePosition = e.dataTransfer.getData('sourcePosition');
     
-    if (piece && !piece.classList.contains('placed')) {
-        // Clone the piece and place it in the drop zone
-        const placedPiece = piece.cloneNode(true);
-        placedPiece.draggable = false;
-        placedPiece.classList.add('in-board');
-        dropZone.appendChild(placedPiece);
+    // Handle piece already on board (moving between positions)
+    // Check this FIRST to avoid finding the original piece in selection board
+    if (sourcePosition !== '') {
+        const sourceDrop = document.querySelector(`[data-position="${sourcePosition}"]`);
+        const movingPiece = sourceDrop.querySelector('.puzzle-piece');
         
-        // Mark original as placed
-        piece.classList.add('placed');
-        dropZone.classList.add('filled');
-        
-        // Check if puzzle is complete
-        checkPuzzleComplete();
+        if (movingPiece) {
+            // Remove from old position
+            sourceDrop.classList.remove('filled');
+            sourceDrop.innerHTML = '';
+            
+            // Place in new position
+            dropZone.appendChild(movingPiece);
+            dropZone.classList.add('filled');
+            
+            // Check if puzzle is complete
+            checkPuzzleComplete();
+        }
+    }
+    // Handle piece from selection board
+    else {
+        const piece = document.querySelector(`[data-piece-id="${pieceId}"]`);
+        if (piece && !piece.classList.contains('placed')) {
+            // Clone the piece and place it in the drop zone
+            const placedPiece = piece.cloneNode(true);
+            placedPiece.draggable = true;
+            placedPiece.classList.add('in-board');
+            placedPiece.addEventListener('dragstart', handleDragStart);
+            placedPiece.addEventListener('dragend', handleDragEnd);
+            dropZone.appendChild(placedPiece);
+            
+            // Mark original as placed
+            piece.classList.add('placed');
+            dropZone.classList.add('filled');
+            
+            // Check if puzzle is complete
+            checkPuzzleComplete();
+        }
     }
 }
 
