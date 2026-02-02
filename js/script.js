@@ -335,19 +335,26 @@ function generateSelectionBoard() {
     const selectionBoard = document.getElementById('puzzleSelectionBoard');
     selectionBoard.innerHTML = '';
     
+    // Create array of piece indices and shuffle them
+    const pieceIndices = Array.from({length: 16}, (_, i) => i);
+    for (let i = pieceIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pieceIndices[i], pieceIndices[j]] = [pieceIndices[j], pieceIndices[i]];
+    }
+    
     for (let row = 0; row < 2; row++) {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'puzzle-selection-row';
         
         for (let col = 0; col < 8; col++) {
-            const pieceIndex = row * 8 + col;
+            const displayPosition = row * 8 + col;
+            const pieceIndex = pieceIndices[displayPosition];
             const piece = document.createElement('div');
             piece.className = 'puzzle-piece';
             piece.draggable = true;
             piece.dataset.pieceId = pieceIndex;
             piece.dataset.correctPosition = pieceIndex;
             piece.style.backgroundImage = `url('./public/assets/puzzle-pieces/puzzle-piece-${pieceIndex}.jpg')`;
-            piece.textContent = pieceIndex + 1; // Placeholder number
             piece.addEventListener('dragstart', handleDragStart);
             piece.addEventListener('dragend', handleDragEnd);
             rowDiv.appendChild(piece);
