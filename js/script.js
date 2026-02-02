@@ -492,12 +492,25 @@ function showCompletionMessage() {
     message.className = 'puzzle-completion-message';
     message.innerHTML = `
         <p>The pieces fell into place and your consciousness has been restored.</p>
+        <button id="continueButton" style="opacity: 0; transition: opacity 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); background: none; border: none; color: #5078b4e6; font-size: 1.2rem; cursor: pointer; padding: 20px; font-family: inherit;">Continue →</button>
     `;
     document.body.appendChild(message);
     
     setTimeout(() => {
         message.classList.add('visible');
     }, 50);
+    
+    // Show continue button after 3 seconds
+    setTimeout(() => {
+        const continueBtn = document.getElementById('continueButton');
+        if (continueBtn) {
+            continueBtn.style.opacity = '1';
+            continueBtn.addEventListener('click', () => {
+                // Handle continue action here
+                console.log('Continue clicked');
+            });
+        }
+    }, 3000);
 }
 
 function initializePuzzle() {
