@@ -491,8 +491,7 @@ function showCompletionMessage() {
     const message = document.createElement('div');
     message.className = 'puzzle-completion-message';
     message.innerHTML = `
-        <h2>Conscience Restored</h2>
-        <p>The pieces fall into place...</p>
+        <p>The pieces fell into place and your consciousness has been restored.</p>
     `;
     document.body.appendChild(message);
     
@@ -504,11 +503,48 @@ function showCompletionMessage() {
 function initializePuzzle() {
     const choiceContainer = document.getElementById("choiceContainer");
     const puzzleWrapper = document.getElementById("puzzleWrapper");
+    const textElement = choiceContainer.querySelector('.choice-text');
     
-    // Animate existing text up via CSS transition class
-    choiceContainer.classList.add("choice-move-up");
+    if (textElement) {
+        const text = textElement.textContent;
+        const words = text.split(/\s+/).filter(word => word.length > 0);
+        
+        // Create scattered word elements
+        words.forEach((word, index) => {
+            const wordSpan = document.createElement('span');
+            wordSpan.className = 'scattered-word';
+            wordSpan.textContent = word;
+            wordSpan.style.position = 'absolute';
+            wordSpan.style.left = '50%';
+            wordSpan.style.top = '50%';
+            wordSpan.style.transform = 'translate(-50%, -50%)';
+            wordSpan.style.transition = 'all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            wordSpan.style.opacity = '1';
+            wordSpan.style.color = 'black';
+            wordSpan.style.fontSize = '1.2rem';
+            wordSpan.style.pointerEvents = 'none';
+            wordSpan.style.zIndex = '100';
+            document.body.appendChild(wordSpan);
+            
+            // Trigger explosion after a brief delay
+            setTimeout(() => {
+                // Calculate random position avoiding center (puzzle area)
+                const angle = (index / words.length) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+                const distance = 450 + Math.random() * 250;
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+                
+                wordSpan.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${(Math.random() - 0.5) * 720}deg)`;
+                wordSpan.style.opacity = '0.3';
+                wordSpan.style.textShadow = '0 0 10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 0, 0, 0.2)';
+            }, 50 + index * 30);
+        });
+        
+        // Hide original text
+        textElement.style.opacity = '0';
+    }
     
-    // Show puzzle after text moves
+    // Show puzzle after explosion starts
     setTimeout(() => {
         generateMainBoard();
         generateSelectionBoard();
