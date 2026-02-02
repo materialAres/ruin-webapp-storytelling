@@ -23,7 +23,8 @@ let heartbeat = null;
 let rust = null;
 
 const manWordsContainer = document.getElementById('typewriter');
-let typingSpeed = 60;
+// TODO: adjust typing speed at 60
+let typingSpeed = 1;
 let messageIndex = 0;
 let charIndex = 0;
 let typingTimer = null;
@@ -279,9 +280,20 @@ function showChoice(choice) {
         if (choice === 'restore') {
             document.body.style.backgroundColor = 'white';
             choiceContainer.style.color = 'black';
+            
+            // Initialize puzzle after 5 seconds
+            setTimeout(() => {
+                initializePuzzle();
+            }, 5000);
         }
         manOnChair.style.display = 'none';
-        choiceContainer.innerHTML = chosenPathMessages[choice];
+        
+        // Create text element instead of replacing innerHTML to preserve puzzle wrapper
+        const textDiv = document.createElement('div');
+        textDiv.className = 'choice-text';
+        textDiv.textContent = chosenPathMessages[choice];
+        choiceContainer.insertBefore(textDiv, choiceContainer.firstChild);
+        
         choiceContainer.classList.add('visible');
     }, 1000);
 }
@@ -302,3 +314,256 @@ document.getElementById('backButton').addEventListener('click', () => {
         wordsContainer.style.display = 'flex';
     }, 1000);
 });
+
+// Puzzle functions
+function generateMainBoard() {
+    const mainBoard = document.getElementById('puzzleMainBoard');
+    mainBoard.innerHTML = '';
+    
+    for (let i = 0; i < 16; i++) {
+        const dropZone = document.createElement('div');
+        dropZone.className = 'puzzle-drop-zone';
+        dropZone.dataset.position = i;
+        dropZone.addEventListener('dragover', handleDragOver);
+        dropZone.addEventListener('dragleave', handleDragLeave);
+        dropZone.addEventListener('drop', handleDrop);
+        mainBoard.appendChild(dropZone);
+    }
+}
+
+function generateSelectionBoard() {
+    const selectionBoard = document.getElementById('puzzleSelectionBoard');
+    selectionBoard.innerHTML = '';
+    
+    // Create array of piece indices and shuffle them
+    const pieceIndices = Array.from({length: 16}, (_, i) => i);
+    for (let i = pieceIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pieceIndices[i], pieceIndices[j]] = [pieceIndices[j], pieceIndices[i]];
+    }
+    
+    for (let row = 0; row < 2; row++) {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'puzzle-selection-row';
+        
+        for (let col = 0; col < 8; col++) {
+            const displayPosition = row * 8 + col;
+            const pieceIndex = pieceIndices[displayPosition];
+            const piece = document.createElement('div');
+            piece.className = 'puzzle-piece';
+            piece.draggable = true;
+            piece.dataset.pieceId = pieceIndex;
+            piece.dataset.correctPosition = pieceIndex;
+            piece.style.backgroundImage = `url('./public/assets/puzzle-pieces/puzzle-piece-${pieceIndex}.jpg')`;
+            piece.addEventListener('dragstart', handleDragStart);
+            piece.addEventListener('dragend', handleDragEnd);
+            rowDiv.appendChild(piece);
+        }
+        
+        selectionBoard.appendChild(rowDiv);
+    }
+}
+
+function handleDragStart(e) {
+    if (e.target.classList.contains('placed')) {
+        e.preventDefault();
+        return;
+    }
+    
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', e.target.dataset.pieceId);
+    
+    // Store source information for board pieces
+    if (e.target.classList.contains('in-board')) {
+        const dropZone = e.target.parentElement;
+        e.dataTransfer.setData('sourcePosition', dropZone.dataset.position);
+    }
+}
+
+function handleDragEnd(e) {
+    e.target.classList.remove('dragging');
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    if (!e.target.classList.contains('filled')) {
+        e.target.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(e) {
+    e.target.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const dropZone = e.target;
+    dropZone.classList.remove('drag-over');
+    
+    // Don't allow dropping on filled zones
+    if (dropZone.classList.contains('filled')) {
+        return;
+    }
+    
+    const pieceId = e.dataTransfer.getData('text/plain');
+    const sourcePosition = e.dataTransfer.getData('sourcePosition');
+    
+    // Handle piece already on board (moving between positions)
+    // Check this FIRST to avoid finding the original piece in selection board
+    if (sourcePosition !== '') {
+        const sourceDrop = document.querySelector(`[data-position="${sourcePosition}"]`);
+        const movingPiece = sourceDrop.querySelector('.puzzle-piece');
+        
+        if (movingPiece) {
+            // Remove from old position
+            sourceDrop.classList.remove('filled');
+            sourceDrop.innerHTML = '';
+            
+            // Place in new position
+            dropZone.appendChild(movingPiece);
+            dropZone.classList.add('filled');
+            
+            // Check if puzzle is complete
+            checkPuzzleComplete();
+        }
+    }
+    // Handle piece from selection board
+    else {
+        const piece = document.querySelector(`[data-piece-id="${pieceId}"]`);
+        if (piece && !piece.classList.contains('placed')) {
+            // Clone the piece and place it in the drop zone
+            const placedPiece = piece.cloneNode(true);
+            placedPiece.draggable = true;
+            placedPiece.classList.add('in-board');
+            placedPiece.addEventListener('dragstart', handleDragStart);
+            placedPiece.addEventListener('dragend', handleDragEnd);
+            dropZone.appendChild(placedPiece);
+            
+            // Mark original as placed
+            piece.classList.add('placed');
+            dropZone.classList.add('filled');
+            
+            // Check if puzzle is complete
+            checkPuzzleComplete();
+        }
+    }
+}
+
+function checkPuzzleComplete() {
+    const dropZones = document.querySelectorAll('.puzzle-drop-zone');
+    let correctCount = 0;
+    
+    dropZones.forEach((zone, index) => {
+        const piece = zone.querySelector('.puzzle-piece');
+        if (piece && parseInt(piece.dataset.correctPosition, 10) === index) {
+            correctCount++;
+        }
+    });
+    
+    if (correctCount === 16) {
+        onPuzzleComplete();
+    }
+}
+
+function onPuzzleComplete() {
+    const puzzleWrapper = document.getElementById('puzzleWrapper');
+    const mainBoard = document.getElementById('puzzleMainBoard');
+    
+    // Play success sound
+    const successSound = new Audio('./public/sounds/puzzle-complete.ogg');
+    successSound.play();
+    
+    // Add completion visual effect
+    mainBoard.classList.add('puzzle-complete');
+    
+    // Show completion message after 1 second
+    setTimeout(() => {
+        showCompletionMessage();
+    }, 1000);
+}
+
+function showCompletionMessage() {
+    const message = document.createElement('div');
+    message.className = 'puzzle-completion-message';
+    message.innerHTML = `
+        <p>The pieces fell into place and your consciousness has been restored.</p>
+        <button id="continueButton" style="opacity: 0; transition: opacity 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); background: none; border: none; color: #5078b4e6; font-size: 1.2rem; cursor: pointer; padding: 20px; font-family: inherit;">Continue →</button>
+    `;
+    document.body.appendChild(message);
+    
+    setTimeout(() => {
+        message.classList.add('visible');
+    }, 50);
+    
+    // Show continue button after 3 seconds
+    setTimeout(() => {
+        const continueBtn = document.getElementById('continueButton');
+        if (continueBtn) {
+            continueBtn.style.opacity = '1';
+            continueBtn.addEventListener('click', () => {
+                // Handle continue action here
+                console.log('Continue clicked');
+            });
+        }
+    }, 3000);
+}
+
+function initializePuzzle() {
+    const choiceContainer = document.getElementById("choiceContainer");
+    const puzzleWrapper = document.getElementById("puzzleWrapper");
+    const textElement = choiceContainer.querySelector('.choice-text');
+    
+    if (textElement) {
+        const text = textElement.textContent;
+        const words = text.split(/\s+/).filter(word => word.length > 0);
+        
+        // Create scattered word elements
+        words.forEach((word, index) => {
+            const wordSpan = document.createElement('span');
+            wordSpan.className = 'scattered-word';
+            wordSpan.textContent = word;
+            wordSpan.style.position = 'absolute';
+            wordSpan.style.left = '50%';
+            wordSpan.style.top = '50%';
+            wordSpan.style.transform = 'translate(-50%, -50%)';
+            wordSpan.style.transition = 'all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            wordSpan.style.opacity = '1';
+            wordSpan.style.color = 'black';
+            wordSpan.style.fontSize = '1.2rem';
+            wordSpan.style.pointerEvents = 'none';
+            wordSpan.style.zIndex = '100';
+            document.body.appendChild(wordSpan);
+            
+            // Trigger explosion after a brief delay
+            setTimeout(() => {
+                // Calculate random position avoiding center (puzzle area)
+                const angle = (index / words.length) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+                const distance = 450 + Math.random() * 250;
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+                
+                wordSpan.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${(Math.random() - 0.5) * 720}deg)`;
+                wordSpan.style.opacity = '0.3';
+                wordSpan.style.textShadow = '0 0 10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 0, 0, 0.2)';
+            }, 50 + index * 30);
+        });
+        
+        // Hide original text
+        textElement.style.opacity = '0';
+    }
+    
+    // Show puzzle after explosion starts
+    setTimeout(() => {
+        generateMainBoard();
+        generateSelectionBoard();
+        puzzleWrapper.style.display = "flex";
+        setTimeout(() => {
+            puzzleWrapper.classList.add("visible");
+        }, 50);
+    }, 1000);
+}
