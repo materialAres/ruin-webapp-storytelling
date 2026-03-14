@@ -24,7 +24,7 @@ let rust = null;
 
 const manWordsContainer = document.getElementById('typewriter');
 // TODO: adjust typing speed at 60
-let typingSpeed = 1;
+let typingSpeed = 10;
 let messageIndex = 0;
 let charIndex = 0;
 let typingTimer = null;
@@ -75,6 +75,7 @@ document.getElementById('startButton').addEventListener('click', () => {
     intro.loop = true;
     
     button.classList.add('fade-out');
+    button.style.display = 'none';
     
     setTimeout(() => {
         wordsContainer.classList.add('visible');
@@ -278,13 +279,46 @@ function showChoice(choice) {
     // Show text after words fade
     setTimeout(() => {
         if (choice === 'restore') {
+            destroyAudio(rust);
+            const rebirth = new Audio('./public/sounds/rebirth-in-stillness.ogg');
+            rebirth.play();
             document.body.style.backgroundColor = 'white';
             choiceContainer.style.color = 'black';
             
             // Initialize puzzle after 5 seconds
             setTimeout(() => {
                 initializePuzzle();
-            }, 5000);
+            }, 12000);
+        } else {
+            // For non-restore choices, show game over message after 5 seconds
+            setTimeout(() => {
+                // Fade out the choice text
+                const textDiv = choiceContainer.querySelector('.choice-text');
+                if (textDiv) {
+                    textDiv.style.transition = 'opacity 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    textDiv.style.opacity = '0';
+                    
+                    // Remove text from DOM after fade completes
+                    setTimeout(() => {
+                        textDiv.remove();
+                    }, 1500);
+                }
+                
+                // Show game over message centered
+                setTimeout(() => {
+                    const gameOverMessage = document.createElement('div');
+                    gameOverMessage.style.fontSize = '64px';
+                    gameOverMessage.style.opacity = '0';
+                    gameOverMessage.style.transition = 'opacity 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    gameOverMessage.style.animation = 'image-shake 0.3s infinite';
+                    gameOverMessage.textContent = 'Game Over';
+                    choiceContainer.appendChild(gameOverMessage);
+                    
+                    setTimeout(() => {
+                        gameOverMessage.style.opacity = '1';
+                    }, 50);
+                }, 1500);
+            }, 16000);
         }
         manOnChair.style.display = 'none';
         
@@ -455,6 +489,8 @@ function handleDrop(e) {
 }
 
 function checkPuzzleComplete() {
+    // TODO remove this
+    onPuzzleComplete();
     const dropZones = document.querySelectorAll('.puzzle-drop-zone');
     let correctCount = 0;
     
@@ -471,7 +507,6 @@ function checkPuzzleComplete() {
 }
 
 function onPuzzleComplete() {
-    const puzzleWrapper = document.getElementById('puzzleWrapper');
     const mainBoard = document.getElementById('puzzleMainBoard');
     
     // Play success sound
@@ -505,12 +540,102 @@ function showCompletionMessage() {
         const continueBtn = document.getElementById('continueButton');
         if (continueBtn) {
             continueBtn.style.opacity = '1';
-            continueBtn.addEventListener('click', () => {
-                // Handle continue action here
-                console.log('Continue clicked');
-            });
+            continueBtn.addEventListener('click', onContinueClicked);
         }
     }, 3000);
+}
+
+function onContinueClicked() {
+    // Clear the entire screen
+    document.body.innerHTML = '';
+    
+    // Create container for final text
+    const finalContainer = document.createElement('div');
+    finalContainer.style.display = 'flex';
+    finalContainer.style.justifyContent = 'center';
+    finalContainer.style.alignItems = 'center';
+    finalContainer.style.height = '100vh';
+    finalContainer.style.padding = '40px';
+    finalContainer.style.boxSizing = 'border-box';
+    
+    // Create text element
+    const textElement = document.createElement('div');
+    textElement.style.color = 'black';
+    textElement.style.fontSize = '1.3rem';
+    textElement.style.lineHeight = '1.8';
+    textElement.style.maxWidth = '800px';
+    textElement.style.textAlign = 'center';
+    textElement.style.fontFamily = 'inherit';
+    textElement.style.display = 'flex';
+    textElement.style.flexDirection = 'column';
+    textElement.style.alignItems = 'center';
+    textElement.style.justifyContent = 'center';
+    textElement.style.gap = '16px';
+    
+    // Array of paragraph texts
+    const paragraphs = [
+        'You reached out a hand in search of help; you exposed yourself by setting shame aside, and you received as a gift words of comfort, words that enriched your will toward a new life.',
+        'It is time for you to rebuild, to restore stability to a life that once again belongs to you.',
+        'Honor those who were able to listen to you; honor your own mind, which will accompany you in your ascent.',
+        'If you look back, do so only to accept what has been, because yours is not an escape, nor a way to bury what once was, but a simple, though difficult, change.'
+    ];
+    
+    // Create paragraph elements
+    const pElements = [];
+    paragraphs.forEach((text, index) => {
+        const p = document.createElement('p');
+        p.textContent = text;
+        p.style.opacity = '0';
+        p.style.transition = 'opacity 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        textElement.appendChild(p);
+        pElements.push(p);
+        
+        // Fade in each paragraph
+        setTimeout(() => {
+            p.style.opacity = '1';
+        }, index * 10000 + 50);
+    });
+    
+    // Create "The end" text (hidden initially)
+    const endText = document.createElement('div');
+    endText.textContent = 'The end';
+    endText.style.color = 'black';
+    endText.style.fontSize = '3rem';
+    endText.style.fontWeight = 'bold';
+    endText.style.fontFamily = 'inherit';
+    endText.style.opacity = '0';
+    endText.style.transition = 'opacity 2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    
+    finalContainer.appendChild(textElement);
+    document.body.appendChild(finalContainer);
+    
+    // After 40 seconds, vanish paragraphs like rays of light (bottom to top)
+    setTimeout(() => {
+        const totalParagraphs = pElements.length;
+        
+        pElements.forEach((p, index) => {
+            // Reverse order: last paragraph vanishes first
+            const reverseIndex = totalParagraphs - 1 - index;
+            
+            setTimeout(() => {
+                p.style.transition = 'opacity 0.8s ease-out, color 0.8s ease-out, text-shadow 0.8s ease-out';
+                p.style.color = 'rgba(255, 255, 255, 0.9)';
+                p.style.textShadow = '0 0 20px rgba(255, 255, 255, 1), 0 0 40px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 255, 255, 0.5)';
+                p.style.opacity = '0';
+            }, reverseIndex * 1000);
+        });
+        
+        // After all paragraphs vanished, show "The end"
+        const vanishDuration = totalParagraphs * 1000 + 800;
+        setTimeout(() => {
+            textElement.style.display = 'none';
+            finalContainer.appendChild(endText);
+            
+            setTimeout(() => {
+                endText.style.opacity = '1';
+            }, 50);
+        }, vanishDuration);
+    }, 55000);
 }
 
 function initializePuzzle() {
