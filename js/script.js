@@ -436,7 +436,17 @@ function handleDrop(e) {
     e.preventDefault();
     e.stopPropagation();
     
-    const dropZone = e.target;
+    // Get the actual drop zone (in case we dropped on a piece inside it)
+    let dropZone = e.target;
+    if (!dropZone.classList.contains('puzzle-drop-zone')) {
+        dropZone = dropZone.closest('.puzzle-drop-zone');
+    }
+    
+    // If we couldn't find a drop zone, exit
+    if (!dropZone) {
+        return;
+    }
+    
     dropZone.classList.remove('drag-over');
     
     // Don't allow dropping on filled zones
@@ -490,7 +500,7 @@ function handleDrop(e) {
 
 function checkPuzzleComplete() {
     // TODO remove this
-    onPuzzleComplete();
+    // onPuzzleComplete();
     const dropZones = document.querySelectorAll('.puzzle-drop-zone');
     let correctCount = 0;
     
