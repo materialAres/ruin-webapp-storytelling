@@ -324,18 +324,20 @@ body {
     /* preserve newlines and wrap text */
     white-space: pre-wrap;
     max-width: 30%;
+    font-size: large;
+    line-height: 1.4;
 }
 
 .choose {
     display: flex;
     flex-direction: row;
-    gap: 16px;
+    gap: 24px;
     position: inherit;
     bottom: 10vh;
     left: 50%;
     transform: translateX(-50%);
     color: whitesmoke;
-    font-size: 1.5em;
+    font-size: 1.8em;
     animation: image-shake 1s infinite;
     width: max-content;
     cursor: pointer;
