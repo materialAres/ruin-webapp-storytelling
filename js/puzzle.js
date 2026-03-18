@@ -99,11 +99,6 @@ function handleDrop(e) {
     
     dropZone.classList.remove('drag-over');
     
-    // Don't allow dropping on filled zones
-    if (dropZone.classList.contains('filled')) {
-        return;
-    }
-    
     const pieceId = e.dataTransfer.getData('text/plain');
     const sourcePosition = e.dataTransfer.getData('sourcePosition');
     
@@ -114,20 +109,46 @@ function handleDrop(e) {
         const movingPiece = sourceDrop.querySelector('.puzzle-piece');
         
         if (movingPiece) {
-            // Remove from old position
-            sourceDrop.classList.remove('filled');
-            sourceDrop.innerHTML = '';
-            
-            // Place in new position
-            dropZone.appendChild(movingPiece);
-            dropZone.classList.add('filled');
-            
-            // Check if puzzle is complete
-            checkPuzzleComplete();
+            // Check if target position is filled (swap case)
+            if (dropZone.classList.contains('filled')) {
+                const targetPiece = dropZone.querySelector('.puzzle-piece');
+                
+                if (targetPiece) {
+                    // Swap: move target piece to source position
+                    sourceDrop.innerHTML = '';
+                    sourceDrop.appendChild(targetPiece);
+                    sourceDrop.classList.add('filled');
+                    
+                    // Move source piece to target position
+                    dropZone.innerHTML = '';
+                    dropZone.appendChild(movingPiece);
+                    dropZone.classList.add('filled');
+                    
+                    // Check if puzzle is complete
+                    checkPuzzleComplete();
+                }
+            } else {
+                // Normal move to empty position
+                // Remove from old position
+                sourceDrop.classList.remove('filled');
+                sourceDrop.innerHTML = '';
+                
+                // Place in new position
+                dropZone.appendChild(movingPiece);
+                dropZone.classList.add('filled');
+                
+                // Check if puzzle is complete
+                checkPuzzleComplete();
+            }
         }
     }
     // Handle piece from selection board
     else {
+        // Don't allow dropping from selection board on filled zones
+        if (dropZone.classList.contains('filled')) {
+            return;
+        }
+        
         const piece = document.querySelector(`[data-piece-id="${pieceId}"]`);
         if (piece && !piece.classList.contains('placed')) {
             // Clone the piece and place it in the drop zone
